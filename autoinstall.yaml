@@ -1,26 +1,37 @@
 #cloud-config
 autoinstall:
   version: 1
-  locale: en_US
-  keyboard:
-    layout: pl
+  identity:
+    hostname: ubuntu-desktop
+    username: Matura_Informatyka
+    password: "$6$rounds=4096$eb5vhYxHlW5Rpjl4$MIq8ks8WPL7Ez9XPJG1EX3kyr7EXWwDnpBPYjiUtZ3a0Sy9F.DDL0zghNvDxkW8QBlEvw3ZqNbmGKtFLNw1tA1"
   storage:
     layout:
-      name: direct
-  user-data:
-    disable_root: false
-    users:
-      - name: Matura_Informatyka
-        gecos: "Matura User"
-        groups: sudo
-        shell: /bin/bash
-        sudo: ALL=(ALL) NOPASSWD:ALL
-        lock_passwd: false
-        passwd: "$6$rounds=4096$eb5vhYxHlW5Rpjl4$MIq8ks8WPL7Ez9XPJG1EX3kyr7EXWwDnpBPYjiUtZ3a0Sy9F.DDL0zghNvDxkW8QBlEvw3ZqNbmGKtFLNw1tA1"
+      name: lvm
+  packages:
+    - vim
+    - gcc
+    - g++
+    - codeblocks
+    - wget
+    - curl
+    - gnome-terminal
+    - software-properties-common
+  late-commands:
+    # Add deadsnakes PPA for Python 3.10
+    - curtin in-target -- add-apt-repository ppa:deadsnakes/ppa -y
+    - curtin in-target -- apt update
+    - curtin in-target -- apt install -y python3.10 python3.10-venv python3.10-distutils
 
-    runcmd:
-      - curl -o /usr/local/bin/myscript.sh https://raw.githubusercontent.com/gzulczyk/autoinstallerUbuntu/refs/heads/main/my_script.sh
-      - chmod +x /usr/local/bin/myscript.sh
-      - mkdir -p /home/Matura_Informatyka/.config/autostart
-      - bash -c 'echo "[Desktop Entry]\nType=Application\nExec=gnome-terminal -- bash -c \\"/usr/local/bin/myscript.sh; exec bash\\"\nHidden=false\nNoDisplay=false\nX-GNOME-Autostart-enabled=true\nName=StartScript" > /home/Matura_Informatyka/.config/autostart/hello.desktop'
-      - chown -R Matura_Informatyka:Matura_Informatyka /home/Matura_Informatyka/.config
+    # Download and install PyCharm Community Edition
+    - curtin in-target -- mkdir -p /opt/pycharm
+    - curtin in-target -- wget -O /tmp/pycharm.tar.gz https://download.jetbrains.com/python/pycharm-community-2024.1.tar.gz
+    - curtin in-target -- tar -xzf /tmp/pycharm.tar.gz --strip-components=1 -C /opt/pycharm
+    - curtin in-target -- ln -s /opt/pycharm/bin/pycharm.sh /usr/local/bin/pycharm
+
+    # Create GNOME autostart for your GitHub script
+    - curtin in-target -- mkdir -p /home/Matura_Informatyka/.config/autostart
+    - curtin in-target -- wget -O /usr/local/bin/myscript.sh https://raw.githubusercontent.com/gzulczyk/autoinstallerUbuntu/refs/heads/main/my_script.sh
+    - curtin in-target -- chmod +x /usr/local/bin/myscript.sh
+    - curtin in-target -- bash -c 'echo "[Desktop Entry]\nType=Application\nExec=gnome-terminal -- bash -c \\"/usr/local/bin/myscript.sh; exec bash\\"\nHidden=false\nNoDisplay=false\nX-GNOME-Autostart-enabled=true\nName=StartScript" > /home/Matura_Informatyka/.config/autostart/hello.desktop'
+    - curtin in-target -- chown -R Matura_Informatyka:Matura_Informatyka /home/Matura_Informatyka/.config
