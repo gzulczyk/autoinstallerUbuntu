@@ -1,10 +1,6 @@
 #cloud-config
 autoinstall:
   version: 1
-  identity:
-    hostname: ubuntu
-    username: Matura_Informatyka
-    password: "$6$rounds=4096$eb5vhYxHlW5Rpjl4$MIq8ks8WPL7Ez9XPJG1EX3kyr7EXWwDnpBPYjiUtZ3a0Sy9F.DDL0zghNvDxkW8QBlEvw3ZqNbmGKtFLNw1tA1"  # "Informatyka"
   locale: en_US
   keyboard:
     layout: pl
@@ -13,10 +9,18 @@ autoinstall:
       name: direct
   user-data:
     disable_root: false
-    runcmd:
-      - [ mkdir, -p, /home/Matura_Informatyka/.config/autostart ]
-      - [ bash, -c, 'echo "[Desktop Entry]\nType=Application\nExec=gnome-terminal -- bash -c \\"/usr/local/bin/hello_script.sh; exec bash\\"\nHidden=false\nNoDisplay=false\nX-GNOME-Autostart-enabled=true\nName=StartScript" > /home/Matura_Informatyka/.config/autostart/hello.desktop' ]
-      - [ bash, -c, 'echo "#!/bin/bash\necho -n \"Wpisz coś: \"\nread user_input\necho \"Wpisałeś: \$user_input\" > /home/Matura_Informatyka/user_input.txt" > /usr/local/bin/hello_script.sh' ]
-      - [ chmod, +x, /usr/local/bin/hello_script.sh ]
-      - [ chown, -R, Matura_Informatyka:Matura_Informatyka, /home/Matura_Informatyka/.config ]
+    users:
+      - name: Matura_Informatyka
+        gecos: "Matura User"
+        groups: sudo
+        shell: /bin/bash
+        sudo: ALL=(ALL) NOPASSWD:ALL
+        lock_passwd: false
+        passwd: "$6$rounds=4096$eb5vhYxHlW5Rpjl4$MIq8ks8WPL7Ez9XPJG1EX3kyr7EXWwDnpBPYjiUtZ3a0Sy9F.DDL0zghNvDxkW8QBlEvw3ZqNbmGKtFLNw1tA1"
 
+    runcmd:
+      - curl -o /usr/local/bin/myscript.sh https://raw.githubusercontent.com/gzulczyk/autoinstallerUbuntu/refs/heads/main/my_script.sh
+      - chmod +x /usr/local/bin/myscript.sh
+      - mkdir -p /home/Matura_Informatyka/.config/autostart
+      - bash -c 'echo "[Desktop Entry]\nType=Application\nExec=gnome-terminal -- bash -c \\"/usr/local/bin/myscript.sh; exec bash\\"\nHidden=false\nNoDisplay=false\nX-GNOME-Autostart-enabled=true\nName=StartScript" > /home/Matura_Informatyka/.config/autostart/hello.desktop'
+      - chown -R Matura_Informatyka:Matura_Informatyka /home/Matura_Informatyka/.config
